@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Acceso al Sistema</title>
+    <style>
+        /* Estilos Base y Centrado Absoluto */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            background: #f0f2f5; 
+            padding: 20px;
+        }
+
+        /* Tarjeta de Autenticación Responsive */
+        .auth-container { 
+            background: white; 
+            padding: 35px 25px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); 
+            width: 100%; 
+            max-width: 400px; /* Tamaño ideal en escritorio */
+            transition: all 0.3s ease;
+        }
+
+        /* Título Principal */
+        h2 { 
+            text-align: center; 
+            margin-bottom: 24px; 
+            color: #1a1a1a; 
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        /* Campos de Entrada */
+        .input-group { margin-bottom: 16px; }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #4a4a4a;
+            font-weight: 500;
+        }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #cccccc; 
+            border-radius: 6px; 
+            font-size: 16px; /* Evita el zoom automático molesto en iPhones al hacer foco */
+            background: #fafafa;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        input:focus { 
+            border-color: #007bff; 
+            background: white;
+        }
+
+        /* Botón de Acción */
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background: #007bff; 
+            border: none; 
+            color: white; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 600;
+            margin-top: 10px; 
+            transition: background 0.2s ease;
+        }
+        button:hover { background: #0056b3; }
+        button:active { transform: scale(0.98); }
+
+        /* Enlace de Alternancia */
+        .toggle-link { 
+            text-align: center; 
+            margin-top: 20px; 
+            font-size: 14px; 
+            color: #007bff; 
+            cursor: pointer; 
+            user-select: none;
+        }
+        .toggle-link:hover { text-decoration: underline; }
+
+        /* Mensajes de Alerta */
+        .alert { 
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 14px; 
+            text-align: center; 
+            margin-top: 15px; 
+            display: none; 
+            line-height: 1.4;
+        }
+        .error { background: #ffe3e3; color: #dc3545; border: 1px solid #fbc4c4; }
+        .success { background: #e3f9e5; color: #28a745; border: 1px solid #c7eed1; }
+
+        /* Ajustes específicos para pantallas muy chicas (Celulares antiguos) */
+        @media (max-width: 360px) {
+            .auth-container { padding: 25px 15px; }
+            h2 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <!-- Título que cambia según la acción -->
+        <h2 id="formTitle">Iniciar Sesión</h2>
+        
+        <form id="authForm">
+            <div class="input-group">
+                <label for="email">Correo electrónico</label>
+                <input type="email" id="email" required autocomplete="email">
+            </div>
+            
+            <div class="input-group">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" required autocomplete="current-password">
+            </div>
+            
+            <button type="submit" id="submitBtn">Ingresar</button>
+        </form>
+
+        <!-- Contenedores para mensajes informativos -->
+        <div id="errorMessage" class="alert error"></div>
+        <div id="successMessage" class="alert success"></div>
+
+        <!-- Enlace interactivo para cambiar de modo -->
+        <div id="toggleAuth" class="toggle-link">¿No tenés cuenta? Creá una gratis aquí</div>
+    </div>
+
+    <!-- SDK Modular de Firebase (v9+) -->
+    <script type="module">
+        import { initializeApp } from "https://gstatic.com";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://gstatic.com";
+
+        // === PEGA AQUÍ TUS CREDENCIALES DE FIREBASE ===
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_AUTH_DOMAIN",
+            projectId: "TU_PROJECT_ID",
+            storageBucket: "TU_STORAGE_BUCKET",
+            messagingSenderId: "TU_MESSAGING_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Variables de estado del formulario
+        let isLoginMode = true; 
+        const formTitle = document.getElementById('formTitle');
+        const submitBtn = document.getElementById('submitBtn');
+        const toggleLink = document.getElementById('toggleAuth');
+        const errorDiv = document.getElementById('errorMessage');
+        const successDiv = document.getElementById('successMessage');
+        const passwordInput = document.getElementById('password');
+
+        // Alternar dinámicamente entre Inicio de Sesión y Registro Público
+        toggleLink.addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+            
+            if (isLoginMode) {
+                formTitle.innerText = "Iniciar Sesión";
+                submitBtn.innerText = "Ingresar";
+                toggleLink.innerText = "¿No tenés cuenta? Creá una gratis aquí";
+                passwordInput.setAttribute('autocomplete', 'current-password');
+            } else {
+                formTitle.innerText = "Crear Cuenta Gratis";
+                submitBtn.innerText = "Registrarme";
+                toggleLink.innerText = "¿Ya tenés cuenta? Iniciá sesión acá";
+                passwordInput.setAttribute('autocomplete', 'new-password');
+            }
+        });
+
+        // Procesar el envío de datos
+        document.getElementById('authForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            if (isLoginMode) {
+                // === LÓGICA DE INICIO DE SESIÓN ===
+                signInWithEmailAndPassword(auth, email, password)
+                    .then(() => {
+                        window.location.href = 'dashboard.html';
+                    })
+                    .catch((error) => {
+                        errorDiv.innerText = "Los datos ingresados son incorrectos. Verificalos e intentá de nuevo.";
+                        errorDiv.style.display = 'block';
+                    });
+            } else {
+                // === LÓGICA DE CREACIÓN DE CUENTA PÚBLICA ===
+                createUserWithEmailAndPassword(auth, email, password)
+                    .then(() => {
+                        successDiv.innerText = "¡Tu cuenta fue creada con éxito! Redirigiendo al panel privado...";
+                        successDiv.style.display = 'block';
+                        
+                        // Redirección con delay para que el usuario llegue a leer el mensaje
+                        setTimeout(() => {
+                            window.location.href = 'dashboard.html';
+                        }, 1800);
+                    })
+                    .catch((error) => {
+                        // Traducción amigable de los errores comunes de Firebase
+                        if (error.code === 'auth/email-already-in-use') {
+                            errorDiv.innerText = "Este correo electrónico ya se encuentra registrado.";
+                        } else if (error.code === 'auth/weak-password') {
+                            errorDiv.innerText = "La contraseña es muy débil. Debe tener un mínimo de 6 caracteres.";
+                        } else if (error.code === 'auth/invalid-email') {
+                            errorDiv.innerText = "El formato del correo electrónico no es válido.";
+                        } else {
+                            errorDiv.innerText = "Hubo un inconveniente al crear la cuenta. Por favor, intentá de nuevo.";
+                        }
+                        errorDiv.style.display = 'block';
+                    });
+            }
+        });
+    </script>
+</body>
+</html>
+
