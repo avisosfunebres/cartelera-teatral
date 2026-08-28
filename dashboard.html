@@ -121,13 +121,12 @@
 
     </div>
 
-    <!-- Lógica de Control de Acceso con Firebase -->
-<!-- SDK de Firebase Clásico v8 -->
-<script src="https://cloudflare.com"></script>
-<script src="https://cloudflare.com"></script>
-
 
 <script>
+    import { initializeApp } from "https://gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
     // === REEMPLAZÁ CON TUS MISMAS CREDENCIALES REALES ===
     const firebaseConfig = {
 	  apiKey: "AIzaSyAn58MK-9KuijpbjC5tC2Z7MCXKzKnvGX8",
