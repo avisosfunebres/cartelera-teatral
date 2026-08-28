@@ -138,12 +138,13 @@
     </div>
 
     <!-- SDK Modular de Firebase (v9+) -->
-    <script type="module">
-		import { initializeApp } from "https://gstatic.com";
-		import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://gstatic.com";
-		
-        // === PEGA AQUÍ TUS CREDENCIALES DE FIREBASE ===
-        const firebaseConfig = {
+<!-- SDK de Firebase Clásico v8 -->
+<script src="https://gstatic.com"></script>
+<script src="https://gstatic.com"></script>
+
+<script>
+    // === TU CONFIGURACIÓN DE FIREBASE (Pegá tus datos reales acá) ===
+    const firebaseConfig = {
 	  apiKey: "AIzaSyAn58MK-9KuijpbjC5tC2Z7MCXKzKnvGX8",
 	  authDomain: "cartelera-teatral.firebaseapp.com",
 	  projectId: "cartelera-teatral",
@@ -151,87 +152,75 @@
 	  messagingSenderId: "371703320749",
 	  appId: "1:371703320749:web:be24b94546544066c97624",
 	  measurementId: "G-BJ6HKSHXXP"
-        };
+    };
 
-        // Inicializar Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-        // Variables de estado del formulario
-        let isLoginMode = true; 
-        const formTitle = document.getElementById('formTitle');
-        const submitBtn = document.getElementById('submitBtn');
-        const toggleLink = document.getElementById('toggleAuth');
-        const errorDiv = document.getElementById('errorMessage');
-        const successDiv = document.getElementById('successMessage');
-        const passwordInput = document.getElementById('password');
+    // Variables de interfaz
+    let isLoginMode = true; 
+    const formTitle = document.getElementById('formTitle');
+    const submitBtn = document.getElementById('submitBtn');
+    const toggleLink = document.getElementById('toggleAuth');
+    const errorDiv = document.getElementById('errorMessage');
+    const successDiv = document.getElementById('successMessage');
 
-        // Alternar dinámicamente entre Inicio de Sesión y Registro Público
-        toggleLink.addEventListener('click', () => {
-            isLoginMode = !isLoginMode;
-            errorDiv.style.display = 'none';
-            successDiv.style.display = 'none';
-            
-            if (isLoginMode) {
-                formTitle.innerText = "Iniciar Sesión";
-                submitBtn.innerText = "Ingresar";
-                toggleLink.innerText = "¿No tenés cuenta? Creá una gratis aquí";
-                passwordInput.setAttribute('autocomplete', 'current-password');
-            } else {
-                formTitle.innerText = "Crear Cuenta Gratis";
-                submitBtn.innerText = "Registrarme";
-                toggleLink.innerText = "¿Ya tenés cuenta? Iniciá sesión acá";
-                passwordInput.setAttribute('autocomplete', 'new-password');
-            }
-        });
+    // Cambiar entre Login y Registro
+    toggleLink.addEventListener('click', () => {
+        isLoginMode = !isLoginMode;
+        errorDiv.style.display = 'none';
+        successDiv.style.display = 'none';
+        if (isLoginMode) {
+            formTitle.innerText = "Iniciar Sesión";
+            submitBtn.innerText = "Ingresar";
+            toggleLink.innerText = "¿No tenés cuenta? Creá una gratis aquí";
+        } else {
+            formTitle.innerText = "Crear Cuenta Gratis";
+            submitBtn.innerText = "Registrarme";
+            toggleLink.innerText = "¿Ya tenés cuenta? Iniciá sesión acá";
+        }
+    });
 
-        // Procesar el envío de datos
-        document.getElementById('authForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            
-            errorDiv.style.display = 'none';
-            successDiv.style.display = 'none';
+    // Procesar Formulario
+    document.getElementById('authForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        
+        errorDiv.style.display = 'none';
+        successDiv.style.display = 'none';
 
-            if (isLoginMode) {
-                // === LÓGICA DE INICIO DE SESIÓN ===
-                signInWithEmailAndPassword(auth, email, password)
-                    .then(() => {
-                        window.location.href = 'dashboard.html';
-                    })
-                    .catch((error) => {
-                        errorDiv.innerText = "Los datos ingresados son incorrectos. Verificalos e intentá de nuevo.";
-                        errorDiv.style.display = 'block';
-                    });
-            } else {
-                // === LÓGICA DE CREACIÓN DE CUENTA PÚBLICA ===
-                createUserWithEmailAndPassword(auth, email, password)
-                    .then(() => {
-                        successDiv.innerText = "¡Tu cuenta fue creada con éxito! Redirigiendo al panel privado...";
-                        successDiv.style.display = 'block';
-                        
-                        // Redirección con delay para que el usuario llegue a leer el mensaje
-                        setTimeout(() => {
-                            window.location.href = 'dashboard.html';
-                        }, 1800);
-                    })
-                    .catch((error) => {
-                        // Traducción amigable de los errores comunes de Firebase
-                        if (error.code === 'auth/email-already-in-use') {
-                            errorDiv.innerText = "Este correo electrónico ya se encuentra registrado.";
-                        } else if (error.code === 'auth/weak-password') {
-                            errorDiv.innerText = "La contraseña es muy débil. Debe tener un mínimo de 6 caracteres.";
-                        } else if (error.code === 'auth/invalid-email') {
-                            errorDiv.innerText = "El formato del correo electrónico no es válido.";
-                        } else {
-                            errorDiv.innerText = "Hubo un inconveniente al crear la cuenta. Por favor, intentá de nuevo.";
-                        }
-                        errorDiv.style.display = 'block';
-                    });
-            }
-        });
-    </script>
+        if (isLoginMode) {
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    window.location.href = 'dashboard.html';
+                })
+                .catch((error) => {
+                    errorDiv.innerText = "Los datos ingresados son incorrectos.";
+                    errorDiv.style.display = 'block';
+                });
+        } else {
+            auth.createUserWithEmailAndPassword(email, password)
+                .then(() => {
+                    successDiv.innerText = "¡Cuenta creada! Redirigiendo...";
+                    successDiv.style.display = 'block';
+                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1500);
+                })
+                .catch((error) => {
+                    if (error.code === 'auth/email-already-in-use') {
+                        errorDiv.innerText = "Este correo ya está registrado.";
+                    } else if (error.code === 'auth/weak-password') {
+                        errorDiv.innerText = "La contraseña debe tener mínimo 6 caracteres.";
+                    } else {
+                        errorDiv.innerText = "Error al crear la cuenta.";
+                    }
+                    errorDiv.style.display = 'block';
+                });
+        }
+    });
+</script>
+
 </body>
 </html>
 
