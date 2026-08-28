@@ -115,7 +115,7 @@
         <!-- Título que cambia según la acción -->
         <h2 id="formTitle">Iniciar Sesión</h2>
         
-        <form id="authForm">
+        <form id="authForm" onsubmit="event.preventDefault();">
             <div class="input-group">
                 <label for="email">Correo electrónico</label>
                 <input type="email" id="email" required autocomplete="email">
