@@ -92,37 +92,17 @@
 </head>
 <body>
 
-    <!-- Contenedor protegido: Nace oculto y solo se muestra si Firebase aprueba al usuario -->
-    <div id="protectedContent">
-        
-        <!-- Barra de navegación con botón de salida -->
-        <div class="header">
-            <h2>Panel de Formularios</h2>
-            <button id="logoutBtn" class="logout-btn">Cerrar Sesión</button>
-        </div>
-
-        <!-- FORMULARIO 1 DE TALLY -->
-        <div class="form-card">
-            <h3>Formulario Principal</h3>
-            <div class="tally-wrapper">
-                <!-- === REEMPLAZÁ LA URL DE ABAJO POR TU ENLACE DE TALLY === -->
-                <iframe data-tally-src="https://tally.so" title="Formulario Tally 1"></iframe>
-            </div>
-        </div>
-
-        <!-- FORMULARIO 2 DE TALLY (Podés duplicar este bloque si necesitás más) -->
-        <div class="form-card">
-            <h3>Encuesta Adicional</h3>
-            <div class="tally-wrapper">
-                <!-- === REEMPLAZÁ LA URL DE ABAJO POR TU SEGUNDO ENLACE DE TALLY === -->
-                <iframe data-tally-src="https://tally.so" title="Formulario Tally 2"></iframe>
-            </div>
-        </div>
-
-    </div>
+<div class="card" style="display: flex; justify-content: space-between; align-items: center;">
+    <!-- Aquí se inyectará el saludo de bienvenida -->
+    <h1 id="saludo-usuario" style="margin: 0; color: #333; font-size: 24px;">Cargando...</h1>
+    
+    <!-- Botón opcional para cerrar sesión de forma segura -->
+    <button onclick="cerrarSesion()" class="btn-cancel" style="padding: 8px 12px;">Cerrar Sesión</button>
+</div>
 
 
-<script>
+
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -139,29 +119,35 @@
     };
 
     firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const contentDiv = document.getElementById('protectedContent');
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-    // Control de sesión clásico
-    auth.onAuthStateChanged((user) => {
+    // CONTROL DE SESIÓN Y SALUDO PERSONALIZADO
+    onAuthStateChanged(auth, (user) => {
         if (user) {
-            contentDiv.style.display = 'block';
-            if (window.Tally) {
-                window.Tally.loadEmbeds(); 
-            }
+            // El usuario ingresó correctamente. Extraemos su correo (o su nombre si lo tiene configurado)
+            const identificador = user.displayName || user.email;
+            
+            // Cambiamos el texto de la pantalla por el saludo real
+            document.getElementById('saludo-usuario').innerText = `¡Bienvenido, ${identificador}! 👋`;
+            
+            // Cargamos sus obras de teatro desde Firestore
+            obtenerObrasDelUsuario(user.uid);
         } else {
-            window.location.href = 'index.html';
+            // Si no hay sesión iniciada, lo mandamos de vuelta al login
+            window.location.href = "index.html";
         }
     });
 
-    // Cerrar sesión
-    document.getElementById('logoutBtn').addEventListener('click', () => {
-        auth.signOut().then(() => {
-            window.location.href = 'index.html';
-        });
-    });
-</script>
+    // Función global para que el botón HTML de cerrar sesión funcione desde un módulo
+    window.cerrarSesion = function() {
+        signOut(auth).then(() => {
+            window.location.href = "index.html";
+        }).catch((error) => console.error("Error al cerrar sesión:", error));
+    }
 
+</script>
 
 
 </body>
