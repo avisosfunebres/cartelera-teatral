@@ -161,13 +161,13 @@
     const auth = getAuth(app);
 
     // 5. Capturar el formulario y procesar el Login
-    const formLogin = document.getElementById('tu-formulario-id'); // Reemplaza por el ID real de tu <form>
+    const formLogin = document.getElementById('authForm'); // Reemplaza por el ID real de tu <form>
     
     formLogin.addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const email = document.getElementById('tu-input-email-id').value; // Reemplaza por tu ID de email
-        const password = document.getElementById('tu-input-pass-id').value; // Reemplaza por tu ID de contraseña
+        const email = document.getElementById('email').value; // Reemplaza por tu ID de email
+        const password = document.getElementById('password').value; // Reemplaza por tu ID de contraseña
 
         try {
             // Función nativa de Firebase para loguear
