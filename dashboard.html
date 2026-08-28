@@ -123,8 +123,9 @@
 
     <!-- Lógica de Control de Acceso con Firebase -->
     <script type="module">
-        import { initializeApp } from "https://gstatic.com";
-        import { getAuth, onAuthStateChanged, signOut } from "https://gstatic.com";
+		// REEMPLAZÁ LAS DOS LÍNEAS DE IMPORTACIÓN EN DASHBOARD TAMBIÉN POR ESTAS:
+		import { initializeApp } from "https://cloudflare.com";
+		import { getAuth, onAuthStateChanged, signOut } from "https://cloudflare.com";
 
         // === REEMPLAZÁ ESTO CON LAS MISMAS CREDENCIALES QUE USAS EN INDEX.HTML ===
         const firebaseConfig = {
